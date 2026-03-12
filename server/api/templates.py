@@ -18,9 +18,11 @@ from typing import Any, Dict, List
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
+from server.paths import TEMPLATES_DIR
+
 router = APIRouter()
 
-_TEMPLATES_DIR = Path(__file__).parent.parent / "data" / "templates"
+_TEMPLATES_DIR = TEMPLATES_DIR
 _TEMPLATES_DIR.mkdir(parents=True, exist_ok=True)
 
 

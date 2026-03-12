@@ -12,9 +12,11 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import List, Optional
 
+from server.paths import DEVICES_JSON
+
 log = logging.getLogger(__name__)
 
-_DEVICES_JSON = Path(__file__).parent.parent / "data" / "devices.json"
+_DEVICES_JSON = DEVICES_JSON
 
 
 @dataclass

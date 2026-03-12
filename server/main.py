@@ -30,7 +30,7 @@ logging.basicConfig(
 
 from PyQt6.QtWidgets import QApplication
 
-_CONFIG_PATH = Path(__file__).parent / "data" / "server_config.json"
+from server.paths import CONFIG_PATH as _CONFIG_PATH
 
 _DEFAULT_CONFIG = {
     "pc_id": "",
@@ -99,4 +99,19 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as exc:
+        import traceback
+        try:
+            from PyQt6.QtWidgets import QApplication, QMessageBox
+            _app = QApplication.instance() or QApplication(sys.argv)
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Icon.Critical)
+            msg.setWindowTitle("Ошибка запуска")
+            msg.setText(str(exc))
+            msg.setDetailedText(traceback.format_exc())
+            msg.exec()
+        except Exception:
+            pass
+        sys.exit(1)

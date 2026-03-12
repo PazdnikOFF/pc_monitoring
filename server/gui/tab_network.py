@@ -188,6 +188,10 @@ class TabNetwork(QWidget):
             "--onefile",
             "--windowed",
             "--name", "PCMonitoringServer",
+            "--collect-all", "uvicorn",
+            "--collect-all", "fastapi",
+            "--collect-all", "starlette",
+            "--collect-all", "anyio",
             f"--add-data={data_src}{sep}server/data",
             str(main_script),
         ]
@@ -211,9 +215,24 @@ class TabNetwork(QWidget):
         self._build_btn.setEnabled(True)
         if exit_code == 0:
             self._build_output.append("\n✓ Сборка завершена успешно")
+            self._copy_data_to_dist()
             self._launch_btn.setEnabled(True)
         else:
             self._build_output.append(f"\n✗ Ошибка сборки (код {exit_code})")
+
+    def _copy_data_to_dist(self) -> None:
+        """Copy server/data/ next to the EXE so writable files work correctly."""
+        import shutil
+        project_root = Path(__file__).resolve().parent.parent.parent
+        src = project_root / "server" / "data"
+        dst = project_root / "dist" / "data"
+        try:
+            if dst.exists():
+                shutil.rmtree(dst)
+            shutil.copytree(src, dst)
+            self._build_output.append(f"Скопировано: data/ → dist/data/")
+        except Exception as exc:
+            self._build_output.append(f"Предупреждение: не удалось скопировать data/: {exc}")
 
     def _on_launch_exe(self) -> None:
         project_root = Path(__file__).resolve().parent.parent.parent

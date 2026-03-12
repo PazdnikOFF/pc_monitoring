@@ -32,8 +32,9 @@ from PyQt6.QtWidgets import (
 )
 
 from server.core.mahm_reader import MAHMReader
+from server.paths import TEMPLATES_DIR
 
-_TEMPLATES_DIR = Path(__file__).parent.parent / "data" / "templates"
+_TEMPLATES_DIR = TEMPLATES_DIR
 _TEMPLATES_DIR.mkdir(parents=True, exist_ok=True)
 
 

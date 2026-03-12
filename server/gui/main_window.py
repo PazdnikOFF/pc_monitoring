@@ -13,7 +13,6 @@ import asyncio
 import json
 import logging
 import threading
-from pathlib import Path
 from typing import Optional
 
 import uvicorn
@@ -44,7 +43,7 @@ from server.gui.tab_network import TabNetwork
 
 log = logging.getLogger(__name__)
 
-_CONFIG_PATH = Path(__file__).parent.parent / "data" / "server_config.json"
+from server.paths import CONFIG_PATH as _CONFIG_PATH
 
 
 def _load_config() -> dict:
