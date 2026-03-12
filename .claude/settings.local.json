@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find /Users/pazdnikoff/.platformio/packages/toolchain-xtensa -name *.h -path */include/* -name stdint.h)"
+    ]
+  }
+}

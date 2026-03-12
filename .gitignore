@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+*.egg-info/
+dist/
+build/
+
+# PlatformIO
+esp8266/.pio/
+esp8266/.pioenvs/
+esp8266/.piolibdeps/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Runtime data (сохраняются программой, не версионируются)
+server/data/devices.json
+server/data/server_config.json
+server/data/templates/
+
+# ESP8266 LittleFS — не версионировать реальные конфиги с паролями
+esp8266/data/config.json
+esp8266/data/binding.json
