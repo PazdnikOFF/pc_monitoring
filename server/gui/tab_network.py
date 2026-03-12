@@ -7,9 +7,11 @@ Shows server IP addresses, port, and connected WebSocket clients.
 from __future__ import annotations
 
 import socket
+import sys
+from pathlib import Path
 from typing import Set
 
-from PyQt6.QtCore import QTimer
+from PyQt6.QtCore import QProcess, QTimer
 from PyQt6.QtWidgets import (
     QFormLayout,
     QGroupBox,
@@ -19,6 +21,7 @@ from PyQt6.QtWidgets import (
     QListWidget,
     QPushButton,
     QSpinBox,
+    QTextEdit,
     QVBoxLayout,
     QWidget,
 )
@@ -105,6 +108,29 @@ class TabNetwork(QWidget):
         ws_layout.addWidget(self._ws_count_lbl)
 
         layout.addWidget(ws_group)
+
+        # Build EXE group
+        build_group = QGroupBox("Сборка EXE")
+        build_layout = QVBoxLayout(build_group)
+
+        btn_row = QHBoxLayout()
+        self._build_btn = QPushButton("Собрать EXE (PyInstaller)")
+        self._build_btn.clicked.connect(self._on_build_exe)
+        btn_row.addWidget(self._build_btn)
+
+        self._launch_btn = QPushButton("Запустить EXE")
+        self._launch_btn.setEnabled(False)
+        self._launch_btn.clicked.connect(self._on_launch_exe)
+        btn_row.addWidget(self._launch_btn)
+        build_layout.addLayout(btn_row)
+
+        self._build_output = QTextEdit()
+        self._build_output.setReadOnly(True)
+        self._build_output.setFixedHeight(130)
+        self._build_output.setFontFamily("Courier New")
+        build_layout.addWidget(self._build_output)
+
+        layout.addWidget(build_group)
         layout.addStretch()
 
     # ------------------------------------------------------------------
@@ -141,6 +167,61 @@ class TabNetwork(QWidget):
             self._restart_hint.setText("Перезапустите сервер для применения порта")
             if self._on_port_change:
                 self._on_port_change(new_port)
+
+    # ------------------------------------------------------------------
+    # Build / Launch EXE
+    # ------------------------------------------------------------------
+
+    def _on_build_exe(self) -> None:
+        project_root = Path(__file__).resolve().parent.parent.parent
+        main_script = project_root / "server" / "main.py"
+        data_src = project_root / "server" / "data"
+        sep = ";" if sys.platform == "win32" else ":"
+
+        self._build_output.clear()
+        self._build_btn.setEnabled(False)
+        self._launch_btn.setEnabled(False)
+        self._build_output.append(f"Сборка из {main_script} …\n")
+
+        args = [
+            "-m", "PyInstaller",
+            "--onefile",
+            "--windowed",
+            "--name", "PCMonitoringServer",
+            f"--add-data={data_src}{sep}server/data",
+            str(main_script),
+        ]
+
+        self._build_proc = QProcess(self)
+        self._build_proc.setWorkingDirectory(str(project_root))
+        self._build_proc.readyReadStandardOutput.connect(self._on_build_stdout)
+        self._build_proc.readyReadStandardError.connect(self._on_build_stderr)
+        self._build_proc.finished.connect(self._on_build_finished)
+        self._build_proc.start(sys.executable, args)
+
+    def _on_build_stdout(self) -> None:
+        text = self._build_proc.readAllStandardOutput().data().decode("utf-8", errors="replace")
+        self._build_output.append(text.rstrip())
+
+    def _on_build_stderr(self) -> None:
+        text = self._build_proc.readAllStandardError().data().decode("utf-8", errors="replace")
+        self._build_output.append(text.rstrip())
+
+    def _on_build_finished(self, exit_code: int, _status) -> None:
+        self._build_btn.setEnabled(True)
+        if exit_code == 0:
+            self._build_output.append("\n✓ Сборка завершена успешно")
+            self._launch_btn.setEnabled(True)
+        else:
+            self._build_output.append(f"\n✗ Ошибка сборки (код {exit_code})")
+
+    def _on_launch_exe(self) -> None:
+        project_root = Path(__file__).resolve().parent.parent.parent
+        exe = project_root / "dist" / "PCMonitoringServer.exe"
+        if not exe.exists():
+            self._build_output.append(f"EXE не найден: {exe}")
+            return
+        QProcess.startDetached(str(exe), [])
 
     def stop(self) -> None:
         self._timer.stop()

@@ -16,6 +16,13 @@ import sys
 import uuid
 from pathlib import Path
 
+# Ensure the project root (parent of this file's directory) is in sys.path so
+# that 'from server.xxx import ...' works regardless of how the script is invoked
+# (e.g. double-click on Windows, python main.py, python -m server.main, etc.)
+_PROJECT_ROOT = Path(__file__).resolve().parent.parent
+if str(_PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(_PROJECT_ROOT))
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",

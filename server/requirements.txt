@@ -3,3 +3,4 @@ uvicorn[standard]
 websockets
 PyQt6
 pywin32  # только Windows, для MAHM shared memory
+pyinstaller  # сборка в EXE
